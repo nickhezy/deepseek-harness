@@ -19,7 +19,7 @@ local/dsh-run/dsh-run.sh dump   [normal|trace]    # print the composed tree, boo
 
 ### 为什么用覆盖层而不是改配置文件
 
-采集设置通过 `--patch` 传入，它在 bundle 层、profile 的 `cordis.patch.yml` 和 home 级 `$DSH_HOME/cordis.patch.yml` 之后合成（[层级顺序](../apps/cli/reference/README.md)）。因此覆盖层是逐次启动生效的：原样运行与采集运行可以交替进行，两者都不改动共享文件，也不给下一次启动留下状态。
+采集设置通过 `--patch` 传入，它在 bundle 层、profile 的 `cordis.patch.yml` 和 home 级 `$DSH_HOME/cordis.patch.yml` 之后合成（[层级顺序](../apps/cli/reference/README.zh.md)）。因此覆盖层是逐次启动生效的：原样运行与采集运行可以交替进行，两者都不改动共享文件，也不给下一次启动留下状态。
 
 `trace.patch.yml` 修改 `session-persistence-jsonl` 上的三个字段：
 
