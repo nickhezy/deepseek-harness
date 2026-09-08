@@ -42,4 +42,6 @@ id 定向 patch 会整体替换该行的 `config` 而非深度合并，因此每
 
 脚本会拒绝位于默认会话根目录之下的 `DSH_TRACE_ROOT`（即上述编码冲突），创建之前拒绝一次、符号链接解析之后再拒绝一次；拒绝不带任务字符串的 `batch`；覆盖层文件缺失时明确报错；并且不向 `dump` 转发任何 app 参数——`--dump-config` 本身就拒绝这类调用。在采集会话之前先运行 `dump batch`：dump 会为每一行标注提供它的文件，因此无需启动即可看到两个覆盖层都已生效。
 
+`prompt-budget.md` 及其 `.zh.md` 不在双语配对门禁的范围内——该门禁只覆盖 `README.*`、`docs/`、`.agents/notes/` 和 `python/`。这一对请手工保持同步，`verify-translation-pairing` 不会捕捉到那里的漂移。
+
 `dsh-trace.py` 只读原始 `.jsonl`。指向持有 `.jsonl.zstd` 的根目录时，它会指明这是模式用错了并停止，而不是读一半。

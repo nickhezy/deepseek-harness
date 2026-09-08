@@ -4,6 +4,8 @@
 
 `dsh-run.sh` 就是全部接口：它以若干具名模式启动 DeepSeek Harness，并把一次运行做过的事读回来。模式之间的差别只有两点——哪些 `--patch` 覆盖层进入合成后的配置树，以及启动哪个 profile；因此这里不改任何共享文件，任何模式都不会给下一次启动留下状态。
 
+[`prompt-budget.md`](prompt-budget.md) 记录了智能体在读到任务之前就已付出的代价——实测的信封、host 与 subagent 的异同，以及如何重新测量。
+
 真正起作用的是两个覆盖层。[`foreground.patch.yml`](foreground.patch.yml) 让委派变成同步的——子智能体在父智能体的那次工具调用内部跑完。[`trace.patch.yml`](trace.patch.yml) 让 session 日志可读——每行一个 JSON 对象，而不是塞在 Zstandard 帧里的打包行。[`dsh-trace.py`](dsh-trace.py) 负责读取结果，实时读或事后读都可以。
 
 ## 一次性准备

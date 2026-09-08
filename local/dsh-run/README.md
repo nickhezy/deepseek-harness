@@ -4,6 +4,8 @@ English | [中文](README.zh.md)
 
 `dsh-run.sh` is the whole interface: it boots DeepSeek Harness in one of a few named modes and reads back what a run did. The modes differ only in which `--patch` overlays reach the composed config tree and which profile boots, so nothing here edits a shared file and no mode leaves state behind for the next launch.
 
+[`prompt-budget.md`](prompt-budget.md) records what an agent pays before it reads its task — the measured envelope, host versus subagent, and how to re-measure.
+
 Two overlays do the work. [`foreground.patch.yml`](foreground.patch.yml) makes delegation synchronous — a subagent runs to completion inside its parent's tool call. [`trace.patch.yml`](trace.patch.yml) makes the session log readable — one JSON object per line instead of packed rows inside Zstandard frames. [`dsh-trace.py`](dsh-trace.py) reads the result, live or afterwards.
 
 ## One-time setup

@@ -42,4 +42,6 @@ An id-targeted patch replaces the row's whole `config` rather than deep-merging 
 
 The script refuses a `DSH_TRACE_ROOT` under the default session root (the encoding conflict above) both before creating it and again after symlink resolution, refuses `batch` without a job string, fails loud when an overlay file is missing, and forwards no app arguments to `dump`, which `--dump-config` rejects. Run `dump batch` before a collecting session: the dump annotates each row with the file that supplied it, so both overlays winning are visible without booting.
 
+`prompt-budget.md` and its `.zh.md` sit outside the bilingual pairing gate, whose scope is `README.*`, `docs/`, `.agents/notes/` and `python/`. Keep the pair in sync by hand; `verify-translation-pairing` will not catch drift there.
+
 `dsh-trace.py` reads only raw `.jsonl`. Pointed at a root holding `.jsonl.zstd` it names the mode mistake and stops rather than half-reading it.
