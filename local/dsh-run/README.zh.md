@@ -133,6 +133,8 @@ headless 只打印最终消息，而 web UI 是唯一内置的实时界面。`wa
 
 **一个 session 一个文件，而一个子智能体就是一个 session。** 因此一次多智能体运行是一片森林：根 session 的 header 里 `delegationDepth: 0` 且没有 `parentSession`；每个子 header 带着 `origin: subagent`、`delegationDepth: N` 和 `parentSession: <父 id>`。这条链接是把一次运行串起来的唯一线索，三个读取子命令跟的都是它。
 
+目录名就是 session id 本身，而两类 id 的写法不同：根 session 的 id 带 `session-` 前缀（`session-f8263d60-…/`），子 session 的则是裸 UUID（`d9553bd6-…/`）。因此用 `list` 和 `show` 显示的短 id 拼出来的 glob 只会匹配到子 session，而悄悄漏掉根——请改用 `*/session.jsonl` 再按 header 过滤。
+
 一个根目录只承载一种编码。启动时的发现逻辑会拒绝不匹配的后缀而不是忽略它，这既是采集模式需要自己目录的原因，也是 `dsh-run.sh` 拒绝把 `DSH_TRACE_ROOT` 设在 `$DSH_HOME/sessions` 之下的原因。
 
 文件是惰性落盘的，发生在一个 session 第一次追加时——创建了却一直沉默的 session 在磁盘上什么都不留。

@@ -133,6 +133,8 @@ Headless prints only the final message, and the web UI is the only built-in live
 
 **One session is one file, and a subagent is its own session.** A multi-agent run is therefore a forest: the root session's header has `delegationDepth: 0` and no `parentSession`; every child header carries `origin: subagent`, `delegationDepth: N`, and `parentSession: <parent id>`. That link is the only thing tying a run together, and it is what all three reader subcommands follow.
 
+The directory is the session id verbatim, and the two kinds are spelled differently: a root session's id carries a `session-` prefix (`session-f8263d60-…/`) while a child's is a bare UUID (`d9553bd6-…/`). A glob built from the short id that `list` and `show` display therefore matches children but silently misses the root — reach for `*/session.jsonl` and filter on the header instead.
+
 A root holds one encoding. Startup discovery rejects a mismatched suffix rather than ignoring it, which is why the collecting modes need their own directory and why `dsh-run.sh` refuses a `DSH_TRACE_ROOT` under `$DSH_HOME/sessions`.
 
 Files materialize lazily, on a session's first append — a created-but-silent session leaves nothing on disk.
