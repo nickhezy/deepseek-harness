@@ -185,7 +185,7 @@ jq 'select(.type=="request/header") | .data.header | {system, tools: [.tools[].n
 
 ## Known limitations
 
-- **The overlays are per-launch.** A raw `dsh --profile headless` bypasses `dsh-run.sh` and gets stock behavior back: background-by-default delegation and compressed packed logs. That is the deliberate tradeoff for not editing `$DSH_HOME/cordis.patch.yml`; `dump` is how you confirm which you are about to get.
+- **The overlays are per-launch.** A raw `dsh --profile headless` bypasses `dsh-run.sh` and gets stock behavior back: background-by-default delegation and compressed packed logs. That is the deliberate tradeoff for keeping this tooling stateless. To make foreground delegation hold for *every* boot on a machine, raw invocations included, copy `foreground.patch.yml`'s rows into `$DSH_HOME/cordis.patch.yml` — that layer composes before the `--patch` layer, so the launcher's identical overlay lands on top of it idempotently rather than conflicting. Collection-mode logging stays per-launch either way, since a root holds one encoding. `dump` is how you confirm which you are about to get.
 - **`normal` and `trace` need `pnpm run build:web`.** `batch` needs only `build:lib`. The launcher does not check artifact freshness, so a stale frontend bundle serves older browser code until rebuilt.
 - **The watcher polls.** No filesystem-event subscription, no backpressure; live ordering is approximate within the persistence layer's write-batching window.
 - **`dsh-trace.py` does not decode `.jsonl.zstd`.** Pointed at a stock root it says so and stops rather than half-reading it. Collect with `trace`/`batch`, or decompress first.

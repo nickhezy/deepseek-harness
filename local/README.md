@@ -24,7 +24,7 @@ local/dsh-run/dsh-run.sh dump   [normal|trace|batch] # print the composed tree, 
 
 ### Why an overlay instead of a config edit
 
-Both overlays arrive through `--patch`, which composes after the bundle layers, the profile's `cordis.patch.yml`, and the home-level `$DSH_HOME/cordis.patch.yml` ([layer order](../apps/cli/reference/README.md)). They therefore apply per launch: a stock run and a collecting run can alternate without either editing a shared file or leaving state behind for the next launch.
+Both overlays arrive through `--patch`, which composes after the bundle layers, the profile's `cordis.patch.yml`, and the home-level `$DSH_HOME/cordis.patch.yml` ([layer order](../apps/cli/reference/README.md)). They therefore apply per launch: a stock run and a collecting run can alternate without either editing a shared file or leaving state behind for the next launch. A deployment that wants foreground delegation unconditionally, raw `dsh` included, copies `foreground.patch.yml`'s rows into the machine's `$DSH_HOME/cordis.patch.yml`; the launcher's overlay then lands on top with the same values, which is idempotent.
 
 An id-targeted patch replaces the row's whole `config` rather than deep-merging keys, so each overlay restates every field of the rows it touches.
 

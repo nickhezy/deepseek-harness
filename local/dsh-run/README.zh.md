@@ -185,7 +185,7 @@ jq 'select(.type=="request/header") | .data.header | {system, tools: [.tools[].n
 
 ## 已知限制
 
-- **覆盖层是按次启动生效的。** 裸跑 `dsh --profile headless` 绕过 `dsh-run.sh`，就回到标准行为：默认后台的委派，以及压缩打包的日志。这是不去改 `$DSH_HOME/cordis.patch.yml` 所换来的、有意为之的取舍；`dump` 就是用来确认你即将拿到哪一种的。
+- **覆盖层是按次启动生效的。** 裸跑 `dsh --profile headless` 绕过 `dsh-run.sh`，就回到标准行为：默认后台的委派，以及压缩打包的日志。这是让本套工具保持无状态所换来的、有意为之的取舍。若要让前台委派对一台机器上的*每一次*启动都生效（包括裸调用），把 `foreground.patch.yml` 的那几行复制进 `$DSH_HOME/cordis.patch.yml`——该层在 `--patch` 层之前合成，因此启动器那个内容相同的覆盖层是叠在它上面、幂等的，不会冲突。采集模式的日志无论如何仍是按次启动的，因为一个根目录只承载一种编码。`dump` 就是用来确认你即将拿到哪一种的。
 - **`normal` 与 `trace` 需要 `pnpm run build:web`。** `batch` 只需要 `build:lib`。启动器不检查产物新鲜度，因此过期的前端包会一直提供旧的浏览器代码直到重新构建。
 - **观察器是轮询的。** 没有文件系统事件订阅，也没有背压；在持久化层的写入合并窗口内，实时顺序是近似的。
 - **`dsh-trace.py` 不解码 `.jsonl.zstd`。** 指向标准根目录时它会明确报错并停止，而不是读一半。请用 `trace`/`batch` 采集，或先解压。
