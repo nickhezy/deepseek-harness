@@ -8,6 +8,48 @@ English | [中文](README.zh.md)
 
 Two overlays do the work. [`foreground.patch.yml`](foreground.patch.yml) makes delegation synchronous — a subagent runs to completion inside its parent's tool call. [`trace.patch.yml`](trace.patch.yml) makes the session log readable — one JSON object per line instead of packed rows inside Zstandard frames. [`dsh-trace.py`](dsh-trace.py) reads the result, live or afterwards.
 
+## What this fork changes
+
+Everything below lives under `local/`; no upstream file is modified. Two things are changed from stock behavior, and each is set in two places — a per-launch overlay this tooling applies, and optionally a machine-level layer that also catches a raw `dsh` invocation.
+
+| What changes | Parameter | Configured in |
+|---|---|---|
+| Delegation is synchronous, never background | `tool-subagent.enableRunInBackground: false`, same on `tool-subagent-fork`, and `tool-subagent-control.disabled: true` | [`foreground.patch.yml`](foreground.patch.yml), applied by every booting mode — and, for raw `dsh` too, the same rows copied into `$DSH_HOME/cordis.patch.yml` |
+| Session logs are one JSON object per line | `session-persistence-jsonl.root` / `.compression: none` / `.packChunks: false` | [`trace.patch.yml`](trace.patch.yml), applied by `trace`, `batch` and `dump` |
+
+Deployment settings are not overlays and live in the harness home:
+
+| What | Parameter | Configured in |
+|---|---|---|
+| Model and provider route for every agent | `agent-default-model.provider` / `.model`, `llm-pi-ai.providers.<route>.apiKeyEnv` | `$DSH_HOME/settings.yaml` |
+| The provider credential itself | `OPENROUTER_API_KEY` | `$DSH_HOME/.env`, mode `600` (or any earlier source in the credential order above) |
+| Where collection-mode logs are written | `DSH_TRACE_ROOT` | environment; default `~/data/dsh-traces` |
+| How `dsh` is invoked | `DSH_BIN`, and `TSX_TSCONFIG_PATH` which `dsh-run.sh` sets for source execution | environment |
+
+Added tooling: [`dsh-trace.py`](dsh-trace.py) (the `watch` / `list` / `show` modes), this reference, and [`prompt-budget.md`](prompt-budget.md).
+
+## Multi-agent hello world
+
+The smallest run that proves delegation works end to end. The prompt is a versioned file, so the input is reproducible rather than living in someone's shell history:
+
+```sh
+cd ~/huawei2026/dsh-workspace                     # any workspace; it becomes the run's root
+P=~/huawei2026/deepseek-harness/local/dsh-run
+"$P/dsh-run.sh" batch "$(cat "$P/prompts/hello-world.md")"
+```
+
+[`prompts/hello-world.md`](prompts/hello-world.md) asks for three greetings, forbids the parent from writing any of them, and requires the three `subagent` calls to go out in one assistant message so the children run side by side.
+
+```
+1. English: Hello, how can I assist you today?
+2. Chinese: 你好，今天有什么可以帮你的吗？
+3. French: Bonjour, je suis votre assistant prêt à vous aider.
+
+subagents: 3
+```
+
+Exit `0`, ~13 s, four sessions on disk. To watch it happen, start `./dsh-run.sh watch --since 5` in another terminal first; to read it afterwards, `./dsh-run.sh show`. What proves the delegation was real rather than the parent answering itself: the trajectory's `tool/result` events carry the children's greetings, not `started subagent <id>`.
+
 ## One-time setup
 
 The checkout supplies the harness; `$DSH_HOME` (default `~/.dsh`) supplies the model route and the credential.

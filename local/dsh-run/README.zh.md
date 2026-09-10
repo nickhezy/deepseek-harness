@@ -8,6 +8,48 @@
 
 真正起作用的是两个覆盖层。[`foreground.patch.yml`](foreground.patch.yml) 让委派变成同步的——子智能体在父智能体的那次工具调用内部跑完。[`trace.patch.yml`](trace.patch.yml) 让 session 日志可读——每行一个 JSON 对象，而不是塞在 Zstandard 帧里的打包行。[`dsh-trace.py`](dsh-trace.py) 负责读取结果，实时读或事后读都可以。
 
+## 本 fork 改了什么
+
+以下一切都在 `local/` 下；没有修改任何上游文件。相对标准行为改了两件事，每件都有两处配置点——本套工具按次启动施加的覆盖层，以及可选的机器级层（后者连裸跑 `dsh` 也能覆盖）。
+
+| 改变了什么 | 参数 | 配置位置 |
+|---|---|---|
+| 委派是同步的，永不后台 | `tool-subagent.enableRunInBackground: false`，`tool-subagent-fork` 同样，以及 `tool-subagent-control.disabled: true` | [`foreground.patch.yml`](foreground.patch.yml)，每个启动模式都会施加——若要连裸跑 `dsh` 也覆盖，把同样几行复制进 `$DSH_HOME/cordis.patch.yml` |
+| Session 日志每行一个 JSON 对象 | `session-persistence-jsonl.root` / `.compression: none` / `.packChunks: false` | [`trace.patch.yml`](trace.patch.yml)，由 `trace`、`batch`、`dump` 施加 |
+
+部署级设置不是覆盖层，它们住在 harness home 里：
+
+| 是什么 | 参数 | 配置位置 |
+|---|---|---|
+| 所有智能体的模型与 provider 路由 | `agent-default-model.provider` / `.model`，`llm-pi-ai.providers.<route>.apiKeyEnv` | `$DSH_HOME/settings.yaml` |
+| provider 凭据本身 | `OPENROUTER_API_KEY` | `$DSH_HOME/.env`，权限 `600`（或前文凭据顺序里任何更靠前的来源） |
+| 采集模式日志写到哪里 | `DSH_TRACE_ROOT` | 环境变量；默认 `~/data/dsh-traces` |
+| 如何调用 `dsh` | `DSH_BIN`，以及 `dsh-run.sh` 为源码执行设置的 `TSX_TSCONFIG_PATH` | 环境变量 |
+
+新增的工具：[`dsh-trace.py`](dsh-trace.py)（`watch` / `list` / `show` 三个模式）、本参考文档，以及 [`prompt-budget.md`](prompt-budget.md)。
+
+## 多智能体 hello world
+
+能端到端证明委派可用的最小运行。提示词是一个纳入版本管理的文件，因此输入是可复现的，而不是躺在某个人的 shell 历史里：
+
+```sh
+cd ~/huawei2026/dsh-workspace                     # any workspace; it becomes the run's root
+P=~/huawei2026/deepseek-harness/local/dsh-run
+"$P/dsh-run.sh" batch "$(cat "$P/prompts/hello-world.md")"
+```
+
+[`prompts/hello-world.md`](prompts/hello-world.md) 要三句问候，禁止父智能体自己写其中任何一句，并要求三次 `subagent` 调用在同一条 assistant 消息里发出，好让子智能体并排跑。
+
+```
+1. English: Hello, how can I assist you today?
+2. Chinese: 你好，今天有什么可以帮你的吗？
+3. French: Bonjour, je suis votre assistant prêt à vous aider.
+
+subagents: 3
+```
+
+退出码 `0`，约 13 秒，磁盘上四个 session。想看它发生，先在另一个终端起 `./dsh-run.sh watch --since 5`；想事后读，用 `./dsh-run.sh show`。真正证明委派确实发生、而不是父智能体自问自答的，是轨迹里的 `tool/result` 事件带的是子智能体的问候语，而不是 `started subagent <id>`。
+
 ## 一次性准备
 
 仓库检出提供 harness 本身；`$DSH_HOME`（默认 `~/.dsh`）提供模型路由和凭据。

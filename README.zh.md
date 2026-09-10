@@ -6,6 +6,10 @@ DeepSeek Harness（`dsh`）是由 [DeepSeek AI](https://deepseek.com) 开发的�
 
 它采用**一切皆插件**的架构，并由 [Cordis](https://github.com/cordiverse/cordis) 驱动，其设计参见论文 [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper)。
 
+## Fork 说明
+
+本检出是一个 fork。它不引入任何面向上游的改动；新增的一切都在 [`local/`](local/README.md) 之下，那是仅属于本 fork 的工具，不会提交给上游。简而言之：把子智能体委派改成同步的、把 session 日志改成逐行可读的，并在其上加了一个启动器和一个轨迹读取器。[`local/dsh-run/README.md`](local/dsh-run/README.md) 是接口参考，并写明了每个参数分别配置在哪里。
+
 ## 开发者预览
 
 DeepSeek Harness 目前处于 _开发者预览_ 阶段，正在快速迭代。**未来将出现破坏兼容性的变更。**
