@@ -20,11 +20,11 @@ local/dsh-run/dsh-run.sh dump   [normal|trace|batch] # print the composed tree, 
 
 `DSH_BIN` 决定如何调用 `dsh`；不设置时，运行本检出的 TypeScript 入口。`DSH_TRACE_ROOT` 决定采集模式写到哪里（默认 `~/data/dsh-traces`）。
 
-**[`dsh-run/README.md`](dsh-run/README.md) 是接口参考** —— 环境准备、如何提交任务、同步委派、如何实时观察一次运行、轨迹在哪里以及怎么读。
+**[`dsh-run/README.md`](dsh-run/README.zh.md) 是接口参考** —— 环境准备、如何提交任务、同步委派、如何实时观察一次运行、轨迹在哪里以及怎么读。
 
 ### 为什么用覆盖层而不是改配置文件
 
-两个覆盖层都通过 `--patch` 传入，它在 bundle 层、profile 的 `cordis.patch.yml` 和 home 级 `$DSH_HOME/cordis.patch.yml` 之后合成（[层级顺序](../apps/cli/reference/README.md)）。因此它们是逐次启动生效的：原样运行与采集运行可以交替进行，两者都不改动共享文件，也不给下一次启动留下状态。若某个部署希望前台委派无条件生效（包括裸跑 `dsh`），就把 `foreground.patch.yml` 的那几行复制进该机器的 `$DSH_HOME/cordis.patch.yml`；启动器的覆盖层随后以相同的值叠在上面，是幂等的。
+两个覆盖层都通过 `--patch` 传入，它在 bundle 层、profile 的 `cordis.patch.yml` 和 home 级 `$DSH_HOME/cordis.patch.yml` 之后合成（[层级顺序](../apps/cli/reference/README.zh.md)）。因此它们是逐次启动生效的：原样运行与采集运行可以交替进行，两者都不改动共享文件，也不给下一次启动留下状态。若某个部署希望前台委派无条件生效（包括裸跑 `dsh`），就把 `foreground.patch.yml` 的那几行复制进该机器的 `$DSH_HOME/cordis.patch.yml`；启动器的覆盖层随后以相同的值叠在上面，是幂等的。
 
 id 定向 patch 会整体替换该行的 `config` 而非深度合并，因此每个覆盖层都会把它触及的行的每个字段重述一遍。
 
