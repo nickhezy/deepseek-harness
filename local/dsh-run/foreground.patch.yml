@@ -1,0 +1,45 @@
+# Foreground-delegation overlay: every subagent runs to completion inside its
+# parent's tool call.
+#
+# Stock `dsh-base` mounts `tool-subagent` with `backgroundMode: continuable`,
+# which makes an omitted `run_in_background` default to TRUE. The parent then
+# gets back `started subagent <id>` and keeps going while the child runs, and a
+# one-shot surface (`--profile headless`) can reach quiescence and exit before
+# the children have said anything. Collecting their answers takes a second
+# round trip (`job_output`) that the model has to remember to make.
+#
+# `enableRunInBackground: false` closes both halves: the tool schema drops the
+# `run_in_background` property so the model cannot request background work, and
+# `resolveDelegationRun` rejects the key at execution time even if a model emits
+# it anyway (packages/subagent/tool-subagent/src/index.ts). Every delegation
+# then blocks the calling tool call until the child's Activation settles, and
+# the child's final text IS the tool result -- the parent aggregates from tool
+# results in one turn, then the run ends.
+#
+# `backgroundMode: one-shot` is restated because an id-targeted patch REPLACES
+# the row's whole `config` rather than deep-merging: dropping it would fall back
+# to the schema default (which is `one-shot`, but stating it keeps the row
+# readable) -- and `provider`/`toolName` must be restated for the same reason.
+- id: tool-subagent
+  config:
+    provider: spawn
+    toolName: subagent
+    backgroundMode: one-shot
+    enableRunInBackground: false
+
+# Fork children inherit the parent's completed history; they are one-shot in
+# stock config already, but `run_in_background: true` is still offered. Close it
+# for the same reason.
+- id: tool-subagent-fork
+  config:
+    provider: fork
+    toolName: subagent_fork
+    backgroundMode: one-shot
+    enableRunInBackground: false
+
+# `send_message` only addresses CONTINUABLE children -- children that outlive
+# the tool call that started them. Foreground delegation cannot produce one, so
+# the tool would be a schema and prompt-section cost with no reachable subject.
+# `list_agents` is a separate row and stays.
+- id: tool-subagent-control
+  disabled: true
